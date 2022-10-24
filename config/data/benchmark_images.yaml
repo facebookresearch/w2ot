@@ -1,0 +1,7 @@
+_target_: w2ot.data.BenchmarkImagePair
+which: Early
+reverse: False
+batch_size: 64
+
+# Place to clone https://github.com/iamalexkorotin/Wasserstein2Benchmark
+benchmark_repo_dir: ../Wasserstein2Benchmark

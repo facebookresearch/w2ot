@@ -1,0 +1,12 @@
+_target_: w2ot.conjugate_solver.SolverAdam
+gtol: 0.1
+max_iter: 100
+
+adam_kwargs:
+  b1: 0.9
+  b2: 0.999
+
+lr_schedule_kwargs:
+  init_value: 0.1
+  decay_steps: ${conjugate_solver.max_iter}
+  alpha: 1e-4

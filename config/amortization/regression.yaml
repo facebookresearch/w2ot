@@ -1,0 +1,2 @@
+_target_: w2ot.amortization.RegressionAmortization
+finetune_during_training: True

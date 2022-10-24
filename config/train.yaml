@@ -1,0 +1,24 @@
+defaults:
+  - data: gauss8
+  - dual_trainer: icnn
+  - amortization: regression
+  - conjugate_solver: lbfgs_high_precision
+  - hydra/launcher: submitit_slurm
+
+seed: 0
+log_freq: 1000
+save_all_plots: False
+
+hydra:
+  run:
+    dir: ./exp/local/${now:%Y.%m.%d}/${hydra.runtime.choices.data}_${hydra.runtime.choices.dual_trainer}_${now:%H%M}
+  sweep:
+    dir: ./exp/${now:%Y.%m.%d}/${hydra.runtime.choices.data}_${now:%H%M}
+    subdir: ${hydra.job.num}
+  launcher:
+    max_num_timeout: 100000
+    timeout_min: 4319
+    # partition: scavenge
+    partition: learnlab
+    mem_gb: 64
+    gpus_per_node: 1

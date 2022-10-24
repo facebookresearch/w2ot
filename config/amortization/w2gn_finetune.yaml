@@ -1,0 +1,5 @@
+_target_: w2ot.amortization.W2GNAmortization
+cycle_loss_weight: null # Automatically set
+finetune_during_training: True
+regularize_D: False
+only_amortize_H: True

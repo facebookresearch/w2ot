@@ -1,0 +1,2 @@
+_target_: w2ot.amortization.ObjectiveAmortization
+finetune_during_training: False

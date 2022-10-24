@@ -1,0 +1,4 @@
+_target_: w2ot.data.Pair2d
+mu: 'maf_moon'
+nu: 'rings'
+batch_size: 10000

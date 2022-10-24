@@ -1,0 +1,22 @@
+_target_: w2ot.dual_trainer.DualTrainer
+
+D:
+  _target_: w2ot.models.potential_conv.ConvPotential
+
+H:
+  _target_: w2ot.models.potential_conv.ConvPotential
+
+input_dim: null # Automatically set
+num_pretrain_iter: 10001
+num_train_iter: 50001
+
+pretrain_lr: 1e-4
+
+lr_schedule_kwargs:
+  init_value: 1e-4
+  decay_steps: ${dual_trainer.num_train_iter}
+  alpha: 1e-4
+
+adamw_kwargs:
+  b1: 0.5
+  b2: 0.5

@@ -1,0 +1,25 @@
+_target_: w2ot.dual_trainer.DualTrainer
+
+D:
+  _target_: w2ot.models.icnn.ICNN
+  dim_hidden: [128, 128]
+  act: leaky_relu_0.2
+
+H:
+  _target_: w2ot.models.init_nn.InitNN
+  dim_hidden: [512, 512]
+
+input_dim: null # Automatically set
+num_pretrain_iter: 10001
+num_train_iter: 50001
+
+pretrain_lr: 1e-3
+
+lr_schedule_kwargs:
+  init_value: 5e-4
+  decay_steps: ${dual_trainer.num_train_iter}
+  alpha: 1e-4
+
+adamw_kwargs:
+  b1: 0.5
+  b2: 0.5

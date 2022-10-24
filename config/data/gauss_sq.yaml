@@ -1,0 +1,4 @@
+_target_: w2ot.data.Pair2d
+mu: 'gauss_5_sq'
+nu: 'gauss_4_sq'
+batch_size: 10000
