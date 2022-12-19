@@ -1,0 +1,6 @@
+_target_: w2ot.data.PairImages
+batch_size: 10000
+mu: 'demo/1.png'
+nu: 'demo/2.png'
+scale: 10.
+reverse: False

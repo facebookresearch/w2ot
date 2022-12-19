@@ -11,7 +11,7 @@ import sys
 import gc
 
 import numpy as np
-import numpy.random as jnpr
+import numpy.random as npr
 import sklearn.datasets
 
 import torch
@@ -152,10 +152,102 @@ class Pair2d(PairData):
     input_dim = 2
     bounds = [-10, 10]
 
-
     def load_samplers(self):
         X_sampler = get_sampler(self.mu)
         Y_sampler = get_sampler(self.nu)
+        return X_sampler, Y_sampler
+
+    def plot(self, dual_trainer, loc):
+        nrow, ncol = 1, 3
+        fig, axs = plt.subplots(nrow, ncol, figsize=(4*ncol,4*nrow))
+        key = jax.random.PRNGKey(0)
+        k1, k2, key = jax.random.split(key, 3)
+        n_sample = 512
+        X = self.X_sampler.sample(k1, n_sample)
+        Y = self.Y_sampler.sample(k2, n_sample)
+        X_push = dual_trainer.push(X)
+        Y_push = dual_trainer.push_inv(Y)
+
+        def plot_lines(A, B):
+            xs = np.vstack((A[:,0], B[:,0]))
+            ys = np.vstack((A[:,1], B[:,1]))
+            ax.plot(xs, ys, color=[0.5, 0.5, 1], alpha=0.1)
+
+        ax = axs[0]
+        s = 5
+        ax.scatter(X[:,0], X[:,1], s=s, color='#A7BED3')
+        ax.scatter(Y[:,0], Y[:,1], s=s, color='#1A254B')
+        ax.scatter(X_push[:,0], X_push[:,1], s=s, color='#F2545B')
+        plot_lines(X, X_push)
+
+        ax = axs[1]
+        ax.scatter(X[:,0], X[:,1], s=s, color='#1A254B')
+        ax.scatter(Y[:,0], Y[:,1], s=s, color='#A7BED3')
+        ax.scatter(Y_push[:,0], Y_push[:,1], s=s, color='#F2545B')
+        plot_lines(Y, Y_push)
+
+        ax = axs[2]
+        s = 5
+        ax.scatter(X[:,0], X[:,1], s=s, color='#A7BED3', zorder=10)
+        ax.scatter(Y[:,0], Y[:,1], s=s, color='#1A254B', zorder=10)
+
+        n = 300
+        all_data = jnp.concatenate((X.ravel(), Y.ravel()))
+        b = jnp.abs(all_data).max().item() * 1.2
+        x1 = np.linspace(-b, b, n)
+        x2 = np.linspace(-b, b, n)
+        X1, X2 = np.meshgrid(x1, x2)
+        X1flat = np.ravel(X1)
+        X2flat = np.ravel(X2)
+        X12flat = np.stack((X1flat, X2flat)).T
+        Zflat = utils.vmap_apply(
+            dual_trainer.D, dual_trainer.D_params, X12flat)
+        Z = np.array(Zflat.reshape(X1.shape))
+
+        CS = ax.contourf(X1, X2, Z, cmap='Blues')
+
+        fig.colorbar(CS, ax=ax)
+
+        fig.tight_layout()
+        fig.savefig(loc)
+        plt.close(fig)
+
+
+    def eval_extra(self, dual_trainer):
+        key = jax.random.PRNGKey(0)
+        k1, k2, key = jax.random.split(key, 3)
+        n_sample = 512
+        X = self.X_sampler.sample(k1, n_sample)
+        Y = self.Y_sampler.sample(k2, n_sample)
+        Y_hat = dual_trainer.push(X)
+        X_hat = dual_trainer.push_inv(Y)
+        X_sinkhorn_out = transport.solve(X, X_hat, epsilon=1e-2)
+        Y_sinkhorn_out = transport.solve(Y, Y_hat, epsilon=1e-2)
+        inv_error = X_sinkhorn_out.solver_output.reg_ot_cost
+        fwd_error = Y_sinkhorn_out.solver_output.reg_ot_cost
+        print(f'+ fwd_error: {fwd_error:.2f} inv_error: {inv_error:.2f}')
+        return {'eval_inv_error': inv_error, 'eval_fwd_error': fwd_error}
+
+
+@dataclass
+class PairImages(PairData):
+    mu: str
+    nu: str
+    reverse: bool
+    scale: float
+    input_dim = 2
+    bounds = [0, 10]
+
+    def load_samplers(self):
+        if not hasattr(self, 'reverse'):
+            self.reverse = False
+
+        if self.reverse:
+            X_sampler = ImageSampler(self.nu, scale=self.scale)
+            Y_sampler = ImageSampler(self.mu, scale=self.scale)
+        else:
+            X_sampler = ImageSampler(self.mu, scale=self.scale)
+            Y_sampler = ImageSampler(self.nu, scale=self.scale)
         return X_sampler, Y_sampler
 
     def plot(self, dual_trainer, loc):
@@ -298,6 +390,40 @@ class SklearnSampler:
             X, c = sklearn.datasets.make_swiss_roll(batch_size, noise=0.01, random_state=seed)
             samples = X[:,[2,0]]*scale
         return jnp.array(samples)
+
+
+@dataclass
+class ImageSampler:
+    image_path: str
+    scale: float
+
+    def __post_init__(self):
+        if not os.path.exists(self.image_path):
+            # Try making the path relative to the w2ot repo root
+            self.image_path = SCRIPT_DIR + '/../' + self.image_path
+            assert os.path.exists(self.image_path)
+
+        from skimage.io import imread
+        self.img = 1.-imread(self.image_path)/255.
+        assert self.img.ndim == 2, "Currently only grayscale images are supported"
+        self.img_flat = self.img.reshape(-1)
+        self.img_flat = self.img_flat/ self.img_flat.sum()
+        # Keep the image on the CPU since it may be big
+
+    def sample(self, key, batch_size):
+        # Keep the image on the CPU since it may be big
+        indices = npr.choice(a=len(self.img_flat), size=[batch_size], p=self.img_flat)
+
+        # Sampling in jax can run out of GPU memory easily:
+        # indices = jax.random.categorical(key, logits=self.img_flat, shape=[batch_size])
+
+        h, w = self.img.shape
+        max_dim = max(h,w)
+        x1 = indices % w
+        x2 = h - (indices // w)
+        X = jnp.stack((x1, x2)).T / max_dim
+        X = (X*self.scale) - self.scale/2.
+        return X.astype("float32")
 
 
 @dataclass
