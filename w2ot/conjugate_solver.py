@@ -19,19 +19,18 @@ from w2ot.external.jaxopt_lbfgs import LBFGS
 
 ConjStatus = namedtuple("ConjStatus", "val grad num_iter val_hist grad_norm")
 
-
 @dataclass
 class SolverLBFGSJaxOpt:
-    gtol: float = 0.1
+    gtol: float = 1e-3
     max_iter: int = 100
-    max_linesearch_iter: int = 10
-    linesearch_type: str = 'zoom'
+    max_linesearch_iter: int = 30
+    linesearch_type: str = 'backtracking'
     decrease_factor: float = 2./3.
     ls_method: str = 'strong-wolfe'
     ls_kwargs: dict = field(default_factory=dict)
 
     def conj_min_obj(self, x, f, y):
-        # f^c(y) = min_x f(x) - y^T x
+        # f^*(y) = -inf_x f(x) - y^T x
         return f(x) - x.dot(y)
 
 
@@ -46,7 +45,9 @@ class SolverLBFGSJaxOpt:
                        maxiter=self.max_iter,
                        decrease_factor=self.decrease_factor,
                        linesearch=self.linesearch_type,
-                       condition=self.ls_method)
+                       condition=self.ls_method,
+                       implicit_diff=False,
+                       unroll=False)
 
         out = solver.run(x_init)
 
@@ -70,7 +71,7 @@ class SolverLBFGS:
     ls_kwargs: dict = field(default_factory=dict)
 
     def conj_min_obj(self, x, f, y):
-        # f^c(y) = min_x f(x) - y^T x
+        # f^*(y) = -inf_x f(x) - y^T x
         return f(x) - x.dot(y)
 
 
@@ -127,8 +128,9 @@ class SolverAdam:
                 'decay_steps': self.max_iter,
                 'alpha': 1e-4,
             }
+
     def conj_min_obj(self, x, f, y):
-        # f^c(y) = min_x f(x) - y^T x
+        # f^*(y) = -inf_x f(x) - y^T x
         return f(x) - x.dot(y)
 
 
