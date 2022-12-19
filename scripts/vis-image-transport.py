@@ -60,7 +60,7 @@ def main():
     key = jax.random.PRNGKey(0)
 
     # Sample a lot of transportations between the images
-    n_sample = 5000000
+    n_sample = 1500000
     n_batch = 500000
     X, Y, X_push, Y_push = [], [], [], []
     for i in range(n_sample // n_batch):
@@ -210,9 +210,10 @@ def plot_transport_video_bi(args, exp, X, Y, X_push, Y_push):
 
     gif_fname = f'{args.exp_root}/transport-samples-bi.gif'
     print(f'Saving to {gif_fname}')
-    os.system(f'convert -loop 0 {frames_dir}/forward.mp4 {frames_dir}/reverse.mp4 {gif_fname}')
+    os.system(f'convert -loop 0 {frames_dir}/reverse.mp4 {frames_dir}/forward.mp4 {gif_fname}')
+    # os.system(f'convert -loop 0 {frames_dir}/forward.mp4 {frames_dir}/reverse.mp4 {gif_fname}')
 
-    shutil.rmtree(frames_dir)
+    # shutil.rmtree(frames_dir)
 
 
 

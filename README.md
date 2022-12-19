@@ -130,7 +130,8 @@ and
 
 results in the interpolation:
 
-![transport-samples-bi (1)](https://user-images.githubusercontent.com/707462/208447040-47daa776-58a1-4637-ad37-78fbc213fbc5.gif)
+![](https://user-images.githubusercontent.com/707462/208504865-0efd3dea-6dc6-40ad-8aa5-7819d03ddf0f.gif)
+
 
 # Evaluating on the Wasserstein 2 benchmark
 
