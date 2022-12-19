@@ -121,11 +121,14 @@ allows images to be used to give samples from 2-dimensional measures.
 Training on samples between
 [this image](https://user-images.githubusercontent.com/707462/208446984-0f0294cc-9ca2-40ba-a82a-402d51910f3c.png)
 and
-[this image](https://user-images.githubusercontent.com/707462/208447009-09eba823-cfca-444f-bda9-10649c6e86e9.png) gives:
+[this image](https://user-images.githubusercontent.com/707462/208447009-09eba823-cfca-444f-bda9-10649c6e86e9.png) with:
 
 ```bash
 ./w2ot/run_train.py data=images dual_trainer=nn amortization=regression conjugate_solver=lbfgs_high_precision dual_trainer.D.dim_hidden='[512,512]' dual_trainer.D.act='leaky_relu_0.01'
+./scripts/vis-image-transport.py <exp_dir>
 ```
+
+results in the interpolation:
 
 ![transport-samples-bi (1)](https://user-images.githubusercontent.com/707462/208447040-47daa776-58a1-4637-ad37-78fbc213fbc5.gif)
 
