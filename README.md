@@ -114,6 +114,21 @@ These are the `maf_moon`, `rings`, and `moon_to_rings` datasets.
 
 ![huang](https://user-images.githubusercontent.com/707462/197429888-069d2eb2-9517-4af2-9a02-4bfea9c88461.gif)
 
+## Results on image interpolations
+
+The [image data loader](https://github.com/facebookresearch/w2ot/blob/main/config/data/images.yaml)
+allows images to be used to give samples from 2-dimensional measures.
+Training on samples between
+[this image](https://user-images.githubusercontent.com/707462/208446984-0f0294cc-9ca2-40ba-a82a-402d51910f3c.png)
+and
+[this image](https://user-images.githubusercontent.com/707462/208447009-09eba823-cfca-444f-bda9-10649c6e86e9.png) gives:
+
+```bash
+./w2ot/run_train.py data=images dual_trainer=nn amortization=regression conjugate_solver=lbfgs_high_precision dual_trainer.D.dim_hidden='[512,512]' dual_trainer.D.act='leaky_relu_0.01'
+```
+
+![transport-samples-bi (1)](https://user-images.githubusercontent.com/707462/208447040-47daa776-58a1-4637-ad37-78fbc213fbc5.gif)
+
 # Evaluating on the Wasserstein 2 benchmark
 
 The software in this repository attains state-of-the-art performance

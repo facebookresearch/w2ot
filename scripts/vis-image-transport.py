@@ -61,7 +61,7 @@ def main():
 
     # Sample a lot of transportations between the images
     n_sample = 5000000
-    n_batch = 100000
+    n_batch = 500000
     X, Y, X_push, Y_push = [], [], [], []
     for i in range(n_sample // n_batch):
         k1, k2, key = jax.random.split(key, 3)
