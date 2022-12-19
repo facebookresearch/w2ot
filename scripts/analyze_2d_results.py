@@ -99,4 +99,5 @@ idx = ['data'] + list(overrides.keys())
 df = df.set_index(idx).sort_index()
 print(df.to_string())
 
-# import ipdb; ipdb.set_trace()
+# print the best experiments
+print(df.reset_index().sort_values('eval_fwd_error_last'))
