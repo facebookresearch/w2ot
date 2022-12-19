@@ -7,7 +7,7 @@ D:
 
 H:
   _target_: w2ot.models.init_nn.InitNN
-  dim_hidden: [128, 128]
+  dim_hidden: [512, 512]
 
 input_dim: null # Automatically set
 num_pretrain_iter: 10001
