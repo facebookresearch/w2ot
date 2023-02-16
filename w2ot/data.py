@@ -21,9 +21,9 @@ from torchvision.datasets import MNIST
 
 from collections import namedtuple
 
-from ott.core import problems
-from ott.geometry.pointcloud import PointCloud
-from ott.tools import transport
+from ott.geometry import pointcloud
+from ott.problems.linear import linear_problem
+from ott.solvers.linear import sinkhorn
 
 from dataclasses import dataclass
 
@@ -40,6 +40,13 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 from w2ot import utils
 import w2ot.external.benchmark.map_benchmark as mbm
 from w2ot.external.benchmark import distributions as mbm_dists
+
+
+def transport_solve(X, Y, epsilon=1e-2):
+    geom = pointcloud.PointCloud(X, Y)
+    ot_prob = linear_problem.LinearProblem(geom)
+    solver = sinkhorn.Sinkhorn()
+    return solver(ot_prob)
 
 # Get sampler for the synthetic datasets
 def get_sampler(name):
@@ -221,8 +228,8 @@ class Pair2d(PairData):
         Y = self.Y_sampler.sample(k2, n_sample)
         Y_hat = dual_trainer.push(X)
         X_hat = dual_trainer.push_inv(Y)
-        X_sinkhorn_out = transport.solve(X, X_hat, epsilon=1e-2)
-        Y_sinkhorn_out = transport.solve(Y, Y_hat, epsilon=1e-2)
+        X_sinkhorn_out = transport_solve(X, X_hat, epsilon=1e-2)
+        Y_sinkhorn_out = transport_solve(Y, Y_hat, epsilon=1e-2)
         inv_error = X_sinkhorn_out.solver_output.reg_ot_cost
         fwd_error = Y_sinkhorn_out.solver_output.reg_ot_cost
         print(f'+ fwd_error: {fwd_error:.2f} inv_error: {inv_error:.2f}')
@@ -314,8 +321,8 @@ class PairImages(PairData):
         Y = self.Y_sampler.sample(k2, n_sample)
         Y_hat = dual_trainer.push(X)
         X_hat = dual_trainer.push_inv(Y)
-        X_sinkhorn_out = transport.solve(X, X_hat, epsilon=1e-2)
-        Y_sinkhorn_out = transport.solve(Y, Y_hat, epsilon=1e-2)
+        X_sinkhorn_out = transport_solve(X, X_hat, epsilon=1e-2)
+        Y_sinkhorn_out = transport_solve(Y, Y_hat, epsilon=1e-2)
         inv_error = X_sinkhorn_out.solver_output.reg_ot_cost
         fwd_error = Y_sinkhorn_out.solver_output.reg_ot_cost
         print(f'+ fwd_error: {fwd_error:.2f} inv_error: {inv_error:.2f}')
