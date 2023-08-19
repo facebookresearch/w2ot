@@ -96,17 +96,19 @@ class DualTrainer:
     def create_update_fn(self):
         def train_loss_fn(D_params, H_params, X, Y):
             batch_size = X.shape[0]
-
             if self.H is not None:
                 if self.H_push_grad:
+                    #compute the gradient of output of the amortizaed model
                     init_X_hat = utils.push_grad(self.H, H_params, Y)
                 else:
+                    #input Y through the neural net
                     init_X_hat = self.H.apply({'params': H_params}, Y)
             else:
                 init_X_hat = Y
 
             if self.amortization.finetune_during_training:
                 X_hat_detach, num_opt_iter = stop_gradient(
+                    #using conjugate solver to compute conjugate
                     self.jit_fns['push_D_conj'](D_params, Y, init_X_hat))
             else:
                 assert self.H is not None, 'No conjugate prediction or finetuning enabled'
@@ -114,9 +116,13 @@ class DualTrainer:
                 num_opt_iter = jnp.zeros([])
 
             D_apply = lambda x: self.D.apply({'params': D_params} , x)
+            #input X to the neural net (dual potential) D, f_theta(X)
             D_x = D_apply(X)
+            #XY - f_theta(\hat X_detach)
             D_y = utils.batch_dot(X_hat_detach, Y) - D_apply(X_hat_detach)
+            # E[f_theta(x)]
             dual_x = D_x.mean()
+            # -E[f_theta^*(y)]
             dual_y = D_y.mean()
             dual_loss = dual_x + dual_y
 

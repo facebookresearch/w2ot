@@ -1,0 +1,7 @@
+LICENSE
+README.md
+setup.py
+w2ot.egg-info/PKG-INFO
+w2ot.egg-info/SOURCES.txt
+w2ot.egg-info/dependency_links.txt
+w2ot.egg-info/top_level.txt

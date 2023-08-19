@@ -32,7 +32,7 @@ import jax
 import jax.numpy as jnp
 
 from jaxopt._src import base
-from jaxopt._src.zoom_linesearch import zoom_linesearch
+from jaxopt._src.zoom_linesearch import ZoomLineSearch
 from jaxopt.tree_util import tree_map
 from jaxopt.tree_util import tree_vdot
 from jaxopt.tree_util import tree_add_scalar_mul
@@ -318,7 +318,7 @@ class LBFGS(base.IterativeSolver):
         new_grad = ls_state.grad
 
       elif self.linesearch == "zoom":
-        ls_state = zoom_linesearch(f=self._value_and_grad_with_aux,
+        ls_state = ZoomLineSearch(f=self._value_and_grad_with_aux,
                                    xk=params, pk=descent_direction,
                                    old_fval=value, gfk=grad, maxiter=self.maxls,
                                    value_and_grad=True, has_aux=True,

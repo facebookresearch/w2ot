@@ -230,8 +230,8 @@ class Pair2d(PairData):
         X_hat = dual_trainer.push_inv(Y)
         X_sinkhorn_out = transport_solve(X, X_hat, epsilon=1e-2)
         Y_sinkhorn_out = transport_solve(Y, Y_hat, epsilon=1e-2)
-        inv_error = X_sinkhorn_out.solver_output.reg_ot_cost
-        fwd_error = Y_sinkhorn_out.solver_output.reg_ot_cost
+        inv_error = X_sinkhorn_out.reg_ot_cost
+        fwd_error = Y_sinkhorn_out.reg_ot_cost
         print(f'+ fwd_error: {fwd_error:.2f} inv_error: {inv_error:.2f}')
         return {'eval_inv_error': inv_error, 'eval_fwd_error': fwd_error}
 

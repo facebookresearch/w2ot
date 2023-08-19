@@ -6,7 +6,6 @@ from jax import dtypes
 from flax import linen as nn
 
 from functools import partial
-
 batch_dot = jax.vmap(jnp.dot)
 
 class RunningAverageMeter(object):
